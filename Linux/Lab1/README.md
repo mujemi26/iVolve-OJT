@@ -1,0 +1,5 @@
+![nginx user](screenshots/1.jpg)
+![ivolve Group](screenshots/2.jpg)
+![adding user to sudoers](screenshots/3.jpg)
+![installing nginx](screenshots/4.jpg)
+![a password required](screenshots/5.jpg)
