@@ -1,0 +1,7 @@
+![MSMTP Install](screenshots/installing%20Smtp_client.jpg)
+![MSMTP Config](screenshots/MSMTP_Config.jpg)
+![Generate App Password](screenshots/Generate_Password_For_MSMTP.jpg)
+![Secure MSMTP Config File](screenshots/Secure_msmtp_config.jpg)
+![Bash Script](screenshots/bash_script.jpg)
+![CronTab Daily Task](screenshots/CronTab_Task.jpg)
+![Disk Usage Alert](screenshots/DiskUsageAlert_msg.jpg)
