@@ -3,6 +3,10 @@
 - First we need to Generate SSH Keys on Main Machine
   ![Generate SSH](screenshots/Generate%20key.jpg)
 
+  -t rsa: Specifies RSA key type.
+  -b 4096: Sets key size to 4096 bits.
+  -f ~/.ssh/id_rsa: Specifies file location.
+
 - Second Copy the Public Key to the Ubuntu VM
   ![copy Key to vm](screenshots/copy%20key%20to%20vm.jpg)
 
