@@ -5,7 +5,11 @@
     brew install ansible (mac Users)
     sudo apt install ansible -y (linux)
 
+##
+
 > 2- Ensure SSH access is set up
+
+##
 
 > 3- Create inventory file
 
@@ -16,6 +20,8 @@
 [webservers:vars]
  ansible_python_interpreter=/usr/bin/python3
 ```
+
+##
 
 > 4- Create Ansible playbook
 
@@ -60,8 +66,12 @@
 
 ```
 
+##
+
 > 5- Running the Playbook
 
     ansible-playbook -i ubuntu_inventory.ini web_server.yml
+
+##
 
 ![success](screenshots/Xnip2024-12-03_21-57-41.jpg)
