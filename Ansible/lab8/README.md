@@ -63,3 +63,5 @@
 > 5- Running the Playbook
 
     ansible-playbook -i ubuntu_inventory.ini web_server.yml
+
+![success](screenshots/Xnip2024-12-03_21-57-41.jpg)
