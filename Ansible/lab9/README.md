@@ -1,6 +1,6 @@
 # Objective: Write an Ansible playbook to install MySQL, create ivovle database, create user with all privileges on ivolve DB. Use Ansible Vault to encrypt sensitive information such as database user password, and incorporate the encrypted data into an Ansible playbook
 
-> 1- First, let's create an Ansible Vault for our sensitive information:
+### > 1- First, let's create an Ansible Vault for our sensitive information:
 
     ansible-vault create vault vault.yml
 
@@ -11,7 +11,7 @@ mysql_ivolve_db_password: 'SecureUserPassword456!'
 
 ```
 
-> 2- Create MySQL Playbook
+### > 2- Create MySQL Playbook
 
      vim mysql_book.yml
 
@@ -99,7 +99,7 @@ mysql_ivolve_db_password: 'SecureUserPassword456!'
 
 ##
 
-> 3- Create inventory
+### > 3- Create inventory
 
 ```
 [webservers]
@@ -111,7 +111,7 @@ ansible_python_interpreter=/usr/bin/python3
 
 ##
 
-> 4- Run the playbook with vault password
+### > 4- Run the playbook with vault password
 
     ansible-playbook -i ubuntu_inventory.ini mysql_book.yml --ask-vault-pass
 
