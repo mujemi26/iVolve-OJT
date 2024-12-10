@@ -8,7 +8,7 @@
 
 ```
 <!--add diagram img-->
-
+![](screenshots/diagram.png)
 
 
 > ## 1. First, we will start with Variables File
