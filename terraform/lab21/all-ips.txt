@@ -1,0 +1,12 @@
+private-ip-1 : 10.0.3.235
+private-ip-0 : 10.0.1.156
+public-ip-0 : 10.0.0.112
+public-ip-1 : 10.0.2.52
+private-ip-0 : 10.0.1.248
+private-ip-1 : 10.0.3.8
+public-ip-0 : 10.0.0.195
+public-ip-1 : 10.0.2.248
+private-ip-1 : 10.0.3.177
+private-ip-0 : 10.0.1.123
+public-ip-1 : 10.0.2.132
+public-ip-0 : 10.0.0.204
