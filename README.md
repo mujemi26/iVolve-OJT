@@ -39,8 +39,8 @@ Feel free to:
 
 ### 📊 Repository Stats
 
-![GitHub repo size](https://img.shields.io/github/repo-size/yourusername/devops-labs?style=flat-square)
-![GitHub last commit](https://img.shields.io/github/last-commit/yourusername/devops-labs?style=flat-square)
+![GitHub repo size](https://img.shields.io/github/repo-size/mujemi26/devops-labs?style=flat-square)
+![GitHub last commit](https://img.shields.io/github/last-commit/mujemi26/devops-labs?style=flat-square)
 
 ---
 
