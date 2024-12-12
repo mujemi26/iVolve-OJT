@@ -1,0 +1,232 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_CREDENTIALS = 'dockerhub-credentials'
+        DOCKER_IMAGE_NAME = 'mujimmy/lab-app'
+        GITHUB_REPO_URL = 'https://github.com/mujemi26/jenkins.git'
+        KIND_CLUSTER_NAME = 'kind-kind'
+        KUBECONFIG_FILE = 'kind-kubeconfig'
+        KIND_HOME = '\$HOME/.config/kind'
+        KUBE_CONFIG_PATH = '\$HOME/.kube/config'
+        
+    }
+
+    stages {
+        stage('Validate Environment') {
+            steps {
+                sh '''
+                    echo "Checking required tools..."
+                    docker version
+                    kubectl version --client
+                    kind version
+                    
+                    echo "Checking cluster status..."
+                    kind get clusters
+                '''
+            }
+        }
+
+        stage('Checkout Code') {
+            steps {
+                checkout scm // More flexible than direct git checkout
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    try {
+                        sh """
+                            echo "Building image: ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+                            docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} . || exit 1
+                        """
+                    } catch (Exception e) {
+                        error "Docker build failed: ${e.message}"
+                    }
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    try {
+                        withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                            sh """
+                                echo "Pushing images to Docker Hub..."
+                                docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}
+                                docker tag ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} ${DOCKER_IMAGE_NAME}:latest
+                                docker push ${DOCKER_IMAGE_NAME}:latest
+                            """
+                        }
+                    } catch (Exception e) {
+                        error "Failed to push to Docker Hub: ${e.message}"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kind Cluster') {
+            options {
+                timeout(time: 10, unit: 'MINUTES')
+            }
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'kind-kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                        sh """
+                            # Set KUBECONFIG
+                            export KUBECONFIG=${KUBECONFIG_FILE}
+
+                            # Verify cluster and context
+                            echo "Available clusters:"
+                            kind get clusters
+                            
+                            echo "Current context:"
+                            kubectl config current-context
+
+                            # Load image to Kind cluster
+                            echo "Loading image to Kind cluster..."
+                            kind load docker-image ${DOCKER_IMAGE_NAME}:${BUILD_NUMBER} --name ${KIND_CLUSTER_NAME}
+
+                            # Create deployment and service
+                            cat > deployment.yaml << EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab-app-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lab-app
+  template:
+    metadata:
+      labels:
+        app: lab-app
+    spec:
+      containers:
+      - name: lab-app
+        image: ${DOCKER_IMAGE_NAME}:${BUILD_NUMBER}
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lab-app-service
+spec:
+  type: NodePort
+  selector:
+    app: lab-app
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+EOF
+
+                            # Apply deployment
+                            kubectl apply -f deployment.yaml
+                            
+                            # Wait for deployment to be ready
+                            kubectl rollout status deployment/lab-app-deployment --timeout=300s
+                            
+                            # Get deployment status
+                            echo "Deployment status:"
+                            kubectl get deployments -o wide
+                            kubectl get pods -o wide
+                            kubectl get services
+                            
+                            # Get NodePort URL
+                            echo "Application should be accessible at: http://localhost:30080"
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Verify Kind Deployment') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'kind-kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                        sh """
+                            export KUBECONFIG=${KUBECONFIG_FILE}
+                            
+                            echo "Checking pod status..."
+                            kubectl get pods -l app=lab-app
+                            
+                            echo "Checking pod logs..."
+                            for pod in \$(kubectl get pods -l app=lab-app -o name); do
+                                echo "Logs for \$pod:"
+                                kubectl logs \$pod
+                            done
+                            
+                            echo "Checking service..."
+                            kubectl get service lab-app-service
+                            
+                            echo "Testing application endpoint..."
+                            curl -v http://localhost:30080 || true
+                            
+                            echo "Detailed pod information:"
+                            kubectl describe pods -l app=lab-app
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                withCredentials([file(credentialsId: 'kind-kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                    sh """
+                        export KUBECONFIG=${KUBECONFIG_FILE}
+                        echo "Deployment successful!"
+                        echo "Application is accessible at: http://localhost:30080"
+                        echo "Pod status:"
+                        kubectl get pods -l app=lab-app
+                        echo "Service status:"
+                        kubectl get service lab-app-service
+                    """
+                }
+            }
+        }
+        failure {
+            script {
+                withCredentials([file(credentialsId: 'kind-kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                    sh """
+                        export KUBECONFIG=${KUBECONFIG_FILE}
+                        echo "Deployment failed - collecting debug information"
+                        echo "Pod status:"
+                        kubectl get pods -l app=lab-app
+                        echo "Pod descriptions:"
+                        kubectl describe pods -l app=lab-app
+                        echo "Pod logs:"
+                        for pod in \$(kubectl get pods -l app=lab-app -o name); do
+                            echo "Logs for \$pod:"
+                            kubectl logs \$pod
+                        done
+                    """
+                }
+            }
+        }
+        always {
+            sh """
+                echo "Cleaning up resources..."
+                docker rmi ${DOCKER_IMAGE_NAME}:${BUILD_NUMBER} || true
+                docker rmi ${DOCKER_IMAGE_NAME}:latest || true
+                docker logout
+                docker image prune -f
+            """
+            cleanWs()
+        }
+    }
+}

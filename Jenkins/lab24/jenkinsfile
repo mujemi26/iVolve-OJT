@@ -1,0 +1,56 @@
+@Library('jenkins-shared-library') _
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_CREDENTIALS = 'dockerhub-credentials'
+        DOCKER_IMAGE_NAME = 'mujimmy/lab-app'
+        KIND_CLUSTER_NAME = 'kind-kind'
+        KUBECONFIG_FILE = 'kind-kubeconfig'
+    }
+
+    stages {
+        stage('Validate Environment') {
+            steps {
+                validateEnvironment()
+            }
+        }
+
+        stage('Checkout Code') {
+            steps {
+                checkoutCode()
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                buildDockerImage(DOCKER_IMAGE_NAME, env.BUILD_NUMBER)
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                pushToDockerHub(DOCKER_IMAGE_NAME, env.BUILD_NUMBER, DOCKER_HUB_CREDENTIALS)
+            }
+        }
+
+        stage('Deploy to Kind Cluster') {
+            steps {
+                deployToKindCluster(DOCKER_IMAGE_NAME, env.BUILD_NUMBER, KUBECONFIG_FILE, KIND_CLUSTER_NAME)
+            }
+        }
+
+        stage('Verify Kind Deployment') {
+            steps {
+                verifyKindDeployment(KUBECONFIG_FILE)
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
