@@ -1,6 +1,7 @@
 # Multi-Branch Pipeline for Containerized Application Deployment
 
-<pre style="font-size: 14px">This repository contains a Jenkins pipeline configuration for automating the build, push, and deployment of a containerized application based on GitHub branches using Docker and Kubernetes.</pre>
+<pre style="font-size: 14px">This repository contains a Jenkins pipeline configuration for automating the build, push, 
+and deployment of a containerized application based on GitHub branches using Docker and Kubernetes.</pre>
 
 
 <pre style="font-size: 14px">
