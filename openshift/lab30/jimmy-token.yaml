@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jimmy-serviceaccount
+  namespace: jimmy
+  annotations:
+    kubernetes.io/service-account.name: "jimmy-serviceaccount"
+type: kubernetes.io/service-account-token
+
