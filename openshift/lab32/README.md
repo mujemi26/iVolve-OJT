@@ -1,6 +1,6 @@
 # MySQL Pod Setup in Kubernetes 🚀
 
-This repository contains a complete guide and YAML configurations to set up a MySQL Pod in Kubernetes. The setup includes a namespace, resource quotas, ConfigMap, Secret, and a Deployment with resource constraints. Follow the steps below to get started! 💻
+This lab contains a complete guide and YAML configurations to set up a MySQL Pod in Kubernetes. The setup includes a namespace, resource quotas, ConfigMap, Secret, and a Deployment with resource constraints. Follow the steps below to get started! 💻
 
 ---
 
